@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>මංපෙත 1:50,000 & 3D ස්වභාවික භූ රූප නිර්මාපකය</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: #1e293b;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Noto Sans Sinhala', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #0b1120;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand h1 {
+      font-size: 0.96rem;
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .brand span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: #1e293b;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .presets {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      background: #334155;
+      color: white;
+      border: 1px solid #475569;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.76rem;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #475569;
+    }
+
+    button.half-win-btn {
+      background: #0e7490;
+      border-color: #22d3ee;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.full-map-btn {
+      background: #0369a1;
+      border-color: #38bdf8;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.full-3d-btn {
+      background: #047857;
+      border-color: #34d399;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.ultra-nat-btn {
+      background: #15803d;
+      border-color: #86efac;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    button.print-btn {
+      background: #4338ca;
+      border-color: #818cf8;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.map-upload-btn {
+      background: #d97706;
+      border-color: #f59e0b;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.video-btn {
+      background: #7c3aed;
+      border-color: #a78bfa;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.video-btn.recording {
+      background: #dc2626;
+      border-color: #fca5a5;
+      animation: pulseRec 1s infinite;
+    }
+
+    @keyframes pulseRec {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    button.raise-btn {
+      background: #059669;
+      border-color: #34d399;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.lower-btn {
+      background: #2563eb;
+      border-color: #60a5fa;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.auto-raise-btn {
+      background: #b45309;
+      border-color: #fbbf24;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.auto-raise-btn.running {
+      background: #dc2626;
+      border-color: #fca5a5;
+    }
+
+    button.danger {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: var(--danger);
+      color: #fca5a5;
+      font-weight: 600;
+    }
+
+    button.danger:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    button.active {
+      outline: 2px solid #38bdf8;
+      background: #0284c7;
+      font-weight: 600;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 48px);
+      min-height: 0;
+    }
+
+    .left-panel {
+      width: 445px;
+      min-width: 350px;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 8px 10px;
+      gap: 6px;
+      overflow-y: auto;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+
+    .left-panel.half-screen-window {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 50vw;
+      min-width: 50vw;
+      height: 100vh;
+      z-index: 200;
+      border-right: 3px solid #22d3ee;
+      box-shadow: 8px 0 32px rgba(0, 0, 0, 0.75);
+      padding: 12px 16px;
+    }
+
+    .left-panel.half-screen-window .canvas-wrapper {
+      width: min(44vh, 420px);
+      height: min(44vh, 420px);
+      align-self: center;
+    }
+
+    .left-panel.full-screen-map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      min-width: 100vw;
+      height: 100vh;
+      z-index: 300;
+      border-right: none;
+      padding: 14px 20px;
+      display: grid;
+      grid-template-columns: minmax(320px, 46vh) 1fr;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 8px 18px;
+      align-items: start;
+    }
+
+    .left-panel.full-screen-map .panel-title {
+      grid-column: 1 / -1;
+    }
+
+    .left-panel.full-screen-map .zoom-bar {
+      grid-column: 1;
+    }
+
+    .left-panel.full-screen-map .canvas-wrapper {
+      grid-column: 1;
+      width: min(46vh, 440px);
+      height: min(46vh, 440px);
+      align-self: start;
+    }
+
+    .left-panel.full-screen-map .controls-box {
+      grid-column: 2;
+      grid-row: 2 / 5;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .left-panel.full-screen-map .profile-box {
+      grid-column: 1;
+      width: min(46vh, 440px);
+    }
+
+    .panel-title {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .zoom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .zoom-bar button {
+      padding: 3px 7px;
+      font-size: 0.73rem;
+    }
+
+    .zoom-info {
+      font-size: 0.74rem;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 265px;
+      height: 265px;
+      max-width: 100%;
+      align-self: center;
+      flex-shrink: 0;
+      background: #fdfbf7;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 3px solid #0284c7;
+      box-shadow: inset 0 0 12px rgba(2, 132, 199, 0.25);
+    }
+
+    #contourCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .controls-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .control-row label {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    input[type="number"] {
+      width: 72px;
+      background: #1e293b;
+      color: #34d399;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-weight: bold;
+      font-size: 0.76rem;
+      text-align: right;
+    }
+
+    .elevation-palette {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+    }
+
+    .elev-btn {
+      padding: 3px 2px;
+      font-size: 0.71rem;
+      text-align: center;
+      border-radius: 4px;
+      font-weight: bold;
+      border: 2px solid transparent;
+    }
+
+    .elev-btn.selected {
+      border-color: #ffffff;
+      transform: scale(1.02);
+      box-shadow: 0 0 6px rgba(255,255,255,0.45);
+    }
+
+    .road-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .road-btn-red {
+      background: #b91c1c;
+      border-color: #f87171;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.73rem;
+      padding: 4px;
+    }
+
+    .road-btn-yellow {
+      background: #ca8a04;
+      border-color: #fde047;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.73rem;
+      padding: 4px;
+    }
+
+    .road-btn-white {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.73rem;
+      padding: 4px;
+    }
+
+    .road-btn-white.active {
+      background: #ffffff;
+      color: #0f172a;
+      outline: 2.5px solid #38bdf8;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .tool-grid button {
+      font-size: 0.73rem;
+      padding: 4px 3px;
+    }
+
+    .sculpt-150k-box {
+      background: #172554;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sculpt-150k-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .height-shift-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr;
+      gap: 4px;
+    }
+
+    .height-shift-row button {
+      padding: 4px;
+      font-size: 0.72rem;
+    }
+
+    .density-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .density-btn {
+      padding: 4px 2px;
+      font-size: 0.71rem;
+      text-align: center;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 4px;
+    }
+
+    .density-btn.active {
+      background: #10b981;
+      color: #022c22;
+      font-weight: 700;
+      border-color: #34d399;
+      outline: none;
+    }
+
+    .profile-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      flex-shrink: 0;
+    }
+
+    #profileCanvas {
+      width: 100%;
+      height: 54px;
+      background: #020617;
+      border-radius: 4px;
+      display: block;
+      margin-top: 3px;
+    }
+
+    .right-panel {
+      flex: 1;
+      position: relative;
+      background: #020617;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .right-panel.full-screen-3d {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 300;
+    }
+
+    #threeContainer {
+      width: 100%;
+      height: 100%;
+    }
+
+    #labels3DLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .pin-3d {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      background: rgba(15, 23, 42, 0.92);
+      color: #f8fafc;
+      border: 1.5px solid #38bdf8;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pin-3d::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 5px 0;
+      border-style: solid;
+      border-color: #38bdf8 transparent transparent;
+    }
+
+    .exit-3d-btn {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 350;
+      background: #dc2626;
+      border-color: #fca5a5;
+      color: #fff;
+      font-weight: 700;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    }
+
+    .right-panel.full-screen-3d .exit-3d-btn {
+      display: inline-block;
+    }
+
+    .overlay-controls {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 268px;
+      max-height: calc(100% - 24px);
+      overflow-y: auto;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: #e2e8f0;
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      pointer-events: none;
+    }
+
+    .legend-bar {
+      width: 195px;
+      height: 9px;
+      border-radius: 4px;
+      margin: 4px 0;
+      background: linear-gradient(to right, #0284c7, #d6c598, #3f7d20, #234d14, #6b645c, #f8fafc);
+    }
+
+    @media print {
+      @page { size: A4 portrait; margin: 12mm; }
+      body { background: #fff !important; color: #000 !important; height: auto !important; overflow: visible !important; }
+      header, .right-panel, .zoom-bar, .controls-box, #btnCloseMapOverlay { display: none !important; }
+      .workspace { display: block !important; height: auto !important; }
+      .left-panel { width: 100% !important; min-width: 0 !important; background: #fff !important; color: #000 !important; border: none !important; overflow: visible !important; }
+      .canvas-wrapper { width: 320px !important; height: 320px !important; border: 2px solid #000 !important; margin: 10px auto !important; }
+      .profile-box { background: #fff !important; border: 1px solid #000 !important; color: #000 !important; margin-top: 12px !important; }
+      #profileCanvas { height: 110px !important; background: #fff !important; }
+    }
+
+    @media (max-width: 850px) {
+      .workspace {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+      }
+      .left-panel {
+        width: 100%;
+      }
+      .canvas-wrapper {
+        width: min(320px, 82vw);
+        height: min(320px, 82vw);
+      }
+      .left-panel.half-screen-window,
+      .left-panel.full-screen-map {
+        width: 100vw;
+        min-width: 100vw;
+        display: flex;
+        grid-template-columns: 1fr;
+      }
+      .right-panel {
+        height: 460px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>🌿 1:50,000 & 3D ස්වභාවික භූ රූප නිර්මාපකය</h1>
+      <span>සම්පත් පතිරණ | මංපෙත</span>
+    </div>
+    <div class="presets">
+      <button class="full-map-btn" id="btnFullMapScreen" onclick="toggleFullScreenMap()">🖥️ සිතියම සම්පූර්ණ තිරයට</button>
+      <button class="half-win-btn" id="btnHalfWindow" onclick="toggleHalfScreenWindow()">🪟 50% වින්ඩෝව</button>
+      <button class="full-3d-btn" id="btnFull3DScreen" onclick="toggleFullScreen3D()">🌐 3D නිමවුම සම්පූර්ණ තිරයට</button>
+      <button class="ultra-nat-btn" id="btnUltraNatural" onclick="applyUltraNaturalMode()">🌿 උපරිම ස්වභාවික ගතිය</button>
+      <button class="print-btn" onclick="window.print()">🖨️ A4 Print</button>
+      <input type="file" id="mapFileInput" accept="image/*" style="display:none" onchange="handleMapUpload(event)" />
+      <button class="map-upload-btn" onclick="document.getElementById('mapFileInput').click()">🗺️ 0m 1:50,000 සිතියම</button>
+      <button id="btnRecordVideo" class="video-btn" onclick="toggleVideoRecording()">🎥 වීඩියෝව SAVE</button>
+      <button onclick="loadPreset('hill')">කඳු ගැටය</button>
+      <button onclick="loadPreset('ridge')">කඳු වැටිය හා ගඟ</button>
+      <button class="danger" onclick="clearEverythingAtOnce()">🧹 සියල්ල මකන්න</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left 2D Contour, 1:50,000 Mountain Sculpt & Roads Editor -->
+    <div class="left-panel" id="leftMapPanel">
+      <div class="panel-title">
+        <span>1. 1:50,000 සිතියම, කඳු උස්-පහත් හා මාර්ග (මායිම = 0m)</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span id="cursorElev" style="font-size:0.77rem; color:#38bdf8;">උස: 0m</span>
+          <button id="btnCloseMapOverlay" style="display:none; padding:2px 8px; font-size:0.73rem; background:#dc2626;" onclick="exitAnyMapOverlay()">✕ වසන්න</button>
+        </div>
+      </div>
+
+      <!-- 2D Map Zoom & Pan Controls -->
+      <div class="zoom-bar">
+        <span class="zoom-info" id="zoomLevelText">ZOOM: 1.0x</span>
+        <div style="display:flex; gap:4px;">
+          <button onclick="change2DZoom(0.35)" title="Zoom In">🔍+ විශාල</button>
+          <button onclick="change2DZoom(-0.35)" title="Zoom Out">🔍- කුඩා</button>
+          <button id="btnPan2D" onclick="togglePanMode()" title="Move Zoomed Map">✋ චලනය</button>
+          <button onclick="reset2DZoom()" title="Reset Zoom">↺ යථා තත්ත්වය</button>
+        </div>
+      </div>
+
+      <!-- True 1:1 Square Map Canvas -->
+      <div class="canvas-wrapper">
+        <canvas id="contourCanvas" width="400" height="400"></canvas>
+      </div>
+
+      <div class="controls-box">
+        <!-- New Dedicated 1:50,000 Mountain Raise/Lower Tool -->
+        <div class="sculpt-150k-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+            <button id="btnSculpt150k" style="background:#1d4ed8; border-color:#93c5fd; font-weight:700; flex:1;" onclick="setTool('sculpt150k')">
+              ⛰️ 1:50k මත කඳු උස්-පහත්
+            </button>
+            <label class="checkbox-label" style="font-size:0.72rem; color:#fde047;">
+              <input type="checkbox" id="chkShow150kRelief" checked onchange="draw2DCanvas()" />
+              සිතියම මත උස පෙන්වන්න
+            </label>
+          </div>
+          <div class="sculpt-150k-controls">
+            <div class="control-row">
+              <label style="font-size:0.71rem;">
+                <span>බලපෑම් පළල:</span>
+                <span id="brushRadiusVal">14%</span>
+              </label>
+              <input type="range" id="brushRadiusSlider" min="5" max="30" step="1" value="14" oninput="updateBrushSettings()" />
+            </div>
+            <div class="control-row">
+              <label style="font-size:0.71rem;">
+                <span>උස්-පහත් බලය:</span>
+                <span id="brushPowerVal">55m</span>
+              </label>
+              <input type="range" id="brushPowerSlider" min="15" max="150" step="5" value="55" oninput="updateBrushSettings()" />
+            </div>
+          </div>
+          <div id="sculpt150kHint" style="font-size:0.7rem; color:#bfdbfe;">
+            💡 1:50,000 සිතියම මත <strong>Left-Drag</strong> = කඳු උස් කරන්න | <strong>Shift + Drag / Right-Drag</strong> = පහත් කරන්න
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label>
+            <span>සමෝච්ච උස (20m – 2000m):</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <input type="number" id="customElevInput" min="20" max="2000" step="10" value="400" onchange="setCustomElevation(this.value)" />
+              <span style="color:#34d399; font-weight:700;">m</span>
+            </div>
+          </label>
+          <div class="elevation-palette" id="elevPalette"></div>
+        </div>
+
+        <div class="height-shift-row">
+          <button class="raise-btn" onclick="shiftAllContours(100)">⬆️ +100m උස්</button>
+          <button class="lower-btn" onclick="shiftAllContours(-100)">⬇️ -100m පහත්</button>
+          <button id="btnAutoRaise" class="auto-raise-btn" onclick="toggleAutoRaiseContours()">⚡ ස්වයංක්‍රීය උස් (20–2000m)</button>
+        </div>
+
+        <div class="control-row">
+          <label><span>මාර්ග ඇඳීම (1:50,000 මාර්ග වර්ග):</span></label>
+          <div class="road-row">
+            <button id="btnRoadRed" class="road-btn-red" onclick="selectRoadTool('red')">🔴 රතු මාර්ග</button>
+            <button id="btnRoadYellow" class="road-btn-yellow" onclick="selectRoadTool('yellow')">🟡 කහ මාර්ග</button>
+            <button id="btnRoadWhite" class="road-btn-white" onclick="selectRoadTool('white')">⚪ සුදු මාර්ග</button>
+          </div>
+        </div>
+
+        <div class="tool-grid">
+          <button id="btnDraw" class="active" onclick="setTool('draw')">✏️ සමෝච්ච</button>
+          <button id="btnRiver" onclick="setTool('river')">🌊 ගංගා අඳින්න</button>
+          <button id="btnLabel" onclick="setTool('label')">📍 නම් කරන්න</button>
+          <button id="btnProfile" onclick="setTool('profile')">📏 හරස්කඩ A-B</button>
+          <button onclick="undoLastAction()">↩️ ආපසු (Undo)</button>
+          <button onclick="resetSculptGrid()">↺ කඳු උස්-පහත් Reset</button>
+        </div>
+
+        <div class="control-row" id="mapOpacityRow" style="display:none;">
+          <label>
+            <span>1:50,000 සිතියම් පසුබිම් විනිවිදභාවය:</span>
+            <span id="mapOpVal">85%</span>
+          </label>
+          <input type="range" id="mapOpacitySlider" min="0.1" max="1" step="0.05" value="0.85" oninput="updateMapOpacity()" />
+        </div>
+
+        <div class="control-row">
+          <label>
+            <span>භූමිය සුමට කිරීම (Smoothness):</span>
+            <span id="smoothVal">මධ්‍යම</span>
+          </label>
+          <input type="range" id="smoothSlider" min="1" max="5" value="3" oninput="rebuildTerrain()" />
+        </div>
+      </div>
+
+      <div class="profile-box">
+        <div style="font-size:0.74rem; color:#94a3b8; display:flex; justify-content:space-between;">
+          <span id="profileScaleText">හරස්කඩ පැතිකඩ (උපරිම: 1500m)</span>
+          <span>A ➔ B</span>
+        </div>
+        <canvas id="profileCanvas" width="360" height="54"></canvas>
+      </div>
+    </div>
+
+    <!-- Right 3D Natural Terrain View -->
+    <div class="right-panel" id="right3DPanel">
+      <button class="exit-3d-btn" onclick="toggleFullScreen3D()">✕ 3D සම්පූර්ණ තිරයෙන් ඉවත් වන්න</button>
+      <div id="threeContainer"></div>
+      <div id="labels3DLayer"></div>
+
+      <div class="overlay-controls">
+        <div style="font-size:0.83rem; font-weight:bold; color:#34d399; border-bottom:1px solid #334155; padding-bottom:4px;">
+          3D පරිසර හා 1:50,000 සැකසුම්
+        </div>
+
+        <label class="checkbox-label" id="drape150kLabel" style="color:#fbbf24; font-weight:600;">
+          <input type="checkbox" id="chkDrapeMap" onchange="toggleDrapeMap()" />
+          🗺️ 3D මත 1:50,000 සිතියම ඉස්මතු කරන්න
+        </label>
+
+        <div class="control-row">
+          <label>
+            <span>සමෝච්ච රේඛා ඝනත්වය (Density):</span>
+            <strong id="densityLabel" style="color:#38bdf8;">100m</strong>
+          </label>
+          <div class="density-group">
+            <button class="density-btn" data-interval="20" onclick="setContourDensity(20)">1:50k<br>(20m)</button>
+            <button class="density-btn" data-interval="50" onclick="setContourDensity(50)">ඝන<br>(50m)</button>
+            <button class="density-btn active" data-interval="100" onclick="setContourDensity(100)">මධ්‍යම<br>(100m)</button>
+            <button class="density-btn" data-interval="200" onclick="setContourDensity(200)">විරල<br>(200m)</button>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label>
+            <span>සිරස් අතිශයෝක්තිය (Height):</span>
+            <span id="exagVal">1.2x</span>
+          </label>
+          <input type="range" id="exagSlider" min="0.4" max="2.4" step="0.1" value="1.2" oninput="updateExaggeration()" />
+        </div>
+
+        <div class="control-row">
+          <label>
+            <span>සූර්යාලෝක කෝණය (Sun):</span>
+          </label>
+          <input type="range" id="sunSlider" min="0" max="360" value="45" oninput="updateSun()" />
+        </div>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkContours3D" checked onchange="rebuildTerrain()" />
+          〰️ 3D මත සමෝච්ච රේඛා පෙන්වන්න
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkRoads3D" checked onchange="rebuildTerrain()" />
+          🛣️ 3D මත මාර්ග (රතු/කහ/සුදු) පෙන්වන්න
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkTrees" checked onchange="rebuildTerrain()" />
+          🌳 ස්වභාවික වනාන්තර (3D Trees)
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkDetail" checked onchange="rebuildTerrain()" />
+          🪨 පාෂාණ හා භූමි රළුබව
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkWater" checked onchange="toggleWater()" />
+          🌊 මුහුදු ජල මට්ටම (Sea Level)
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkClouds" checked onchange="toggleClouds()" />
+          ☁️ පාවෙන වලාකුළු (Clouds)
+        </label>
+      </div>
+
+      <div class="legend">
+        <div><strong>ස්වභාවික භූ දර්ශන ස්ථර (0m – 2000m)</strong></div>
+        <div class="legend-bar"></div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>0m (මුහුද)</span>
+          <span>වනාන්තර / මාර්ග</span>
+          <span>2000m කඳු</span>
+        </div>
+        <div style="margin-top:3px; color:#94a3b8;">🖱️ වම් ක්ලික්: කරකවන්න | රෝදය: විශාලනය</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    const GRID_SIZE = 128;
+    const MAX_ELEV = 2000;
+
+    const ELEVATIONS = [
+      { val: 20,   color: '#0ea5e9', text: '#fff' },
+      { val: 50,   color: '#2563eb', text: '#fff' },
+      { val: 100,  color: '#16a34a', text: '#fff' },
+      { val: 200,  color: '#65a30d', text: '#fff' },
+      { val: 300,  color: '#ca8a04', text: '#fff' },
+      { val: 400,  color: '#d97706', text: '#fff' },
+      { val: 500,  color: '#ea580c', text: '#fff' },
+      { val: 600,  color: '#dc2626', text: '#fff' },
+      { val: 700,  color: '#991b1b', text: '#fff' },
+      { val: 800,  color: '#78350f', text: '#fff' },
+      { val: 1000, color: '#57534e', text: '#fff' },
+      { val: 1200, color: '#475569', text: '#fff' },
+      { val: 1500, color: '#334155', text: '#fff' },
+      { val: 1800, color: '#1e293b', text: '#fff' },
+      { val: 2000, color: '#0f172a', text: '#fff' }
+    ];
+
+    let selectedElevation = 400;
+    let contourInterval = 100;
+    let currentTool = 'sculpt150k';
+    let selectedRoadType = 'red';
+
+    let brushRadiusNorm = 0.14;
+    let brushPowerElev = 55;
+    let hover150kPoint = null;
+
+    let isHalfScreenWindow = false;
+    let isFullScreenMap = false;
+    let isFullScreen3D = false;
+    let isUltraNatural = false;
+
+    let autoRaiseTimer = null;
+
+    let zoom2D = 1.0;
+    let pan2DX = 0;
+    let pan2DY = 0;
+    let isPanMode = false;
+    let isPanning = false;
+    let lastPanScreen = { x: 0, y: 0 };
+
+    let strokes = [];
+    let rivers = [];
+    let roads = [];
+    let mapLabels = [];
+    let actionHistory = [];
+
+    let sculptGrid = new Float32Array(GRID_SIZE * GRID_SIZE);
+
+    let currentStroke = null;
+    let currentRiver = null;
+    let currentRoad = null;
+    let isDrawing = false;
+    let isSculpting = false;
+    let sculptDirection = 1;
+
+    let profileLine = { ax: 0.1, ay: 0.5, bx: 0.9, by: 0.5 };
+    let isDraggingProfile = false;
+
+    let heightGrid = new Float32Array(GRID_SIZE * GRID_SIZE);
+    let riverMask = new Float32Array(GRID_SIZE * GRID_SIZE);
+    let roadMask = new Uint8Array(GRID_SIZE * GRID_SIZE);
+
+    let baseMapImage = null;
+    let baseMapTexture = null;
+    let baseMapOpacity = 0.85;
+
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingVideo = false;
+
+    function updateBrushSettings() {
+      const rVal = parseInt(document.getElementById('brushRadiusSlider').value, 10);
+      const pVal = parseInt(document.getElementById('brushPowerSlider').value, 10);
+      brushRadiusNorm = rVal / 100;
+      brushPowerElev = pVal;
+      document.getElementById('brushRadiusVal').textContent = rVal + '%';
+      document.getElementById('brushPowerVal').textContent = pVal + 'm';
+      draw2DCanvas();
+    }
+
+    function resetSculptGrid() {
+      sculptGrid.fill(0);
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    function syncOverlayUI() {
+      const panel = document.getElementById('leftMapPanel');
+      const rightPanel = document.getElementById('right3DPanel');
+      const closeBtn = document.getElementById('btnCloseMapOverlay');
+      const halfBtn = document.getElementById('btnHalfWindow');
+      const fullMapBtn = document.getElementById('btnFullMapScreen');
+      const full3DBtn = document.getElementById('btnFull3DScreen');
+
+      panel.classList.toggle('half-screen-window', isHalfScreenWindow && !isFullScreenMap);
+      panel.classList.toggle('full-screen-map', isFullScreenMap);
+      rightPanel.classList.toggle('full-screen-3d', isFullScreen3D);
+
+      closeBtn.style.display = (isHalfScreenWindow || isFullScreenMap) ? 'inline-block' : 'none';
+      halfBtn.classList.toggle('active', isHalfScreenWindow && !isFullScreenMap);
+      halfBtn.textContent = (isHalfScreenWindow && !isFullScreenMap) ? '↩️ සාමාන්‍ය' : '🪟 50% වින්ඩෝව';
+
+      fullMapBtn.classList.toggle('active', isFullScreenMap);
+      fullMapBtn.textContent = isFullScreenMap ? '↩️ සිතියම සාමාන්‍ය' : '🖥️ සිතියම සම්පූර්ණ තිරයට';
+
+      full3DBtn.classList.toggle('active', isFullScreen3D);
+      full3DBtn.textContent = isFullScreen3D ? '↩️ 3D සාමාන්‍ය' : '🌐 3D නිමවුම සම්පූර්ණ තිරයට';
+
+      setTimeout(() => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        draw2DCanvas();
+        drawProfileGraph();
+      }, 220);
+    }
+
+    function toggleFullScreenMap() {
+      isFullScreenMap = !isFullScreenMap;
+      if (isFullScreenMap) {
+        isHalfScreenWindow = false;
+        isFullScreen3D = false;
+      }
+      syncOverlayUI();
+    }
+
+    function toggleHalfScreenWindow() {
+      isHalfScreenWindow = !isHalfScreenWindow;
+      if (isHalfScreenWindow) {
+        isFullScreenMap = false;
+        isFullScreen3D = false;
+      }
+      syncOverlayUI();
+    }
+
+    function toggleFullScreen3D() {
+      isFullScreen3D = !isFullScreen3D;
+      if (isFullScreen3D) {
+        isHalfScreenWindow = false;
+        isFullScreenMap = false;
+      }
+      syncOverlayUI();
+    }
+
+    function exitAnyMapOverlay() {
+      isHalfScreenWindow = false;
+      isFullScreenMap = false;
+      syncOverlayUI();
+    }
+
+    function applyUltraNaturalMode() {
+      isUltraNatural = !isUltraNatural;
+      const btn = document.getElementById('btnUltraNatural');
+      btn.classList.toggle('active', isUltraNatural);
+
+      if (isUltraNatural) {
+        document.getElementById('chkDetail').checked = true;
+        document.getElementById('chkTrees').checked = true;
+        document.getElementById('chkWater').checked = true;
+        document.getElementById('chkClouds').checked = true;
+        document.getElementById('smoothSlider').value = 3;
+        document.getElementById('sunSlider').value = 52;
+        scene.background = new THREE.Color(0x7dd3fc);
+        scene.fog = new THREE.FogExp2(0xbae6fd, 0.0085);
+        hemiLight.intensity = 0.72;
+        sunLight.intensity = 1.42;
+        updateSun();
+        toggleWater();
+        toggleClouds();
+      } else {
+        scene.background = new THREE.Color(0x93c5fd);
+        scene.fog = new THREE.FogExp2(0xbae6fd, 0.006);
+        hemiLight.intensity = 0.65;
+        sunLight.intensity = 1.25;
+      }
+      rebuildTerrain();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (isFullScreen3D) toggleFullScreen3D();
+        else if (isFullScreenMap || isHalfScreenWindow) exitAnyMapOverlay();
+      }
+    });
+
+    function hash2D(x, y) {
+      const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
+      return n - Math.floor(n);
+    }
+
+    function valueNoise(x, y) {
+      const ix = Math.floor(x);
+      const iy = Math.floor(y);
+      const fx = x - ix;
+      const fy = y - iy;
+      const ux = fx * fx * (3.0 - 2.0 * fx);
+      const uy = fy * fy * (3.0 - 2.0 * fy);
+
+      const a = hash2D(ix, iy);
+      const b = hash2D(ix + 1, iy);
+      const c = hash2D(ix, iy + 1);
+      const d = hash2D(ix + 1, iy + 1);
+
+      return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
+    }
+
+    function fbm(x, y) {
+      let val = 0;
+      let amp = 0.5;
+      let freq = 1.0;
+      for (let i = 0; i < 4; i++) {
+        val += amp * (valueNoise(x * freq, y * freq) - 0.5);
+        freq *= 2.1;
+        amp *= 0.5;
+      }
+      return val;
+    }
+
+    const contourCanvas = document.getElementById('contourCanvas');
+    const ctx2D = contourCanvas.getContext('2d');
+    const profileCanvas = document.getElementById('profileCanvas');
+    const ctxProf = profileCanvas.getContext('2d');
+    const labels3DLayer = document.getElementById('labels3DLayer');
+
+    function clampPan() {
+      const maxPan = Math.max(0, (zoom2D - 1) / (2 * zoom2D));
+      pan2DX = Math.max(-maxPan, Math.min(maxPan, pan2DX));
+      pan2DY = Math.max(-maxPan, Math.min(maxPan, pan2DY));
+    }
+
+    function change2DZoom(delta) {
+      zoom2D = Math.max(1.0, Math.min(3.5, +(zoom2D + delta).toFixed(2)));
+      if (zoom2D === 1.0) {
+        pan2DX = 0;
+        pan2DY = 0;
+      } else {
+        clampPan();
+      }
+      document.getElementById('zoomLevelText').textContent = `ZOOM: ${zoom2D.toFixed(1)}x`;
+      draw2DCanvas();
+    }
+
+    function reset2DZoom() {
+      zoom2D = 1.0;
+      pan2DX = 0;
+      pan2DY = 0;
+      isPanMode = false;
+      document.getElementById('btnPan2D').classList.remove('active');
+      document.getElementById('zoomLevelText').textContent = 'ZOOM: 1.0x';
+      draw2DCanvas();
+    }
+
+    function togglePanMode() {
+      isPanMode = !isPanMode;
+      document.getElementById('btnPan2D').classList.toggle('active', isPanMode);
+      contourCanvas.style.cursor = isPanMode ? 'grab' : 'crosshair';
+    }
+
+    function mapToCanvasX(nx, w) {
+      return ((nx - 0.5 + pan2DX) * zoom2D + 0.5) * w;
+    }
+
+    function mapToCanvasY(ny, h) {
+      return ((ny - 0.5 + pan2DY) * zoom2D + 0.5) * h;
+    }
+
+    function getNormCoords(e) {
+      const rect = contourCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const viewX = (clientX - rect.left) / rect.width;
+      const viewY = (clientY - rect.top) / rect.height;
+
+      const nx = (viewX - 0.5) / zoom2D + 0.5 - pan2DX;
+      const ny = (viewY - 0.5) / zoom2D + 0.5 - pan2DY;
+
+      return {
+        x: Math.max(0, Math.min(1, nx)),
+        y: Math.max(0, Math.min(1, ny))
+      };
+    }
+
+    const paletteDiv = document.getElementById('elevPalette');
+    ELEVATIONS.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'elev-btn' + (item.val === selectedElevation ? ' selected' : '');
+      btn.style.backgroundColor = item.color;
+      btn.style.color = item.text;
+      btn.textContent = item.val + 'm';
+      btn.onclick = () => {
+        setCustomElevation(item.val);
+        document.querySelectorAll('.elev-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        setTool('draw');
+      };
+      paletteDiv.appendChild(btn);
+    });
+
+    function setCustomElevation(val) {
+      const parsed = Math.max(20, Math.min(MAX_ELEV, parseInt(val, 10) || 20));
+      selectedElevation = parsed;
+      document.getElementById('customElevInput').value = parsed;
+      setTool('draw');
+    }
+
+    function shiftAllContours(delta) {
+      if (strokes.length === 0) {
+        for (let i = 0; i < sculptGrid.length; i++) {
+          sculptGrid[i] = Math.max(-500, Math.min(MAX_ELEV, sculptGrid[i] + delta));
+        }
+      } else {
+        strokes.forEach(s => {
+          s.elevation = Math.max(20, Math.min(MAX_ELEV, s.elevation + delta));
+        });
+      }
+      selectedElevation = Math.max(20, Math.min(MAX_ELEV, selectedElevation + delta));
+      document.getElementById('customElevInput').value = selectedElevation;
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    function toggleAutoRaiseContours() {
+      const btn = document.getElementById('btnAutoRaise');
+      if (autoRaiseTimer) {
+        clearInterval(autoRaiseTimer);
+        autoRaiseTimer = null;
+        btn.classList.remove('running');
+        btn.textContent = '⚡ ස්වයංක්‍රීය උස් (20–2000m)';
+        return;
+      }
+
+      if (strokes.length === 0) {
+        strokes.push({ elevation: 20, points: makeCirclePoints(0.5, 0.5, 0.36, 0.34) });
+        strokes.push({ elevation: 50, points: makeCirclePoints(0.5, 0.5, 0.22, 0.20) });
+      } else {
+        const currentMax = Math.max(...strokes.map(s => s.elevation));
+        if (currentMax >= MAX_ELEV) {
+          strokes.forEach((s, idx) => {
+            s.elevation = Math.min(MAX_ELEV, 20 + idx * 30);
+          });
+        }
+      }
+
+      btn.classList.add('running');
+      btn.textContent = '⏹️ නවතන්න (2000m)';
+
+      autoRaiseTimer = setInterval(() => {
+        let reachedMax = true;
+        strokes.forEach(s => {
+          if (s.elevation < MAX_ELEV) {
+            s.elevation = Math.min(MAX_ELEV, s.elevation + 25);
+            reachedMax = false;
+          }
+        });
+
+        const topElev = Math.max(...strokes.map(s => s.elevation));
+        selectedElevation = topElev;
+        document.getElementById('customElevInput').value = topElev;
+
+        draw2DCanvas();
+        rebuildTerrain();
+
+        if (reachedMax) {
+          clearInterval(autoRaiseTimer);
+          autoRaiseTimer = null;
+          btn.classList.remove('running');
+          btn.textContent = '⚡ ස්වයංක්‍රීය උස් (20–2000m)';
+        }
+      }, 90);
+    }
+
+    function clearToolHighlights() {
+      ['btnSculpt150k', 'btnDraw', 'btnRiver', 'btnLabel', 'btnProfile', 'btnRoadRed', 'btnRoadYellow', 'btnRoadWhite'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+    }
+
+    function selectRoadTool(roadColorType) {
+      currentTool = 'road';
+      selectedRoadType = roadColorType;
+      isPanMode = false;
+      document.getElementById('btnPan2D').classList.remove('active');
+      contourCanvas.style.cursor = 'crosshair';
+
+      clearToolHighlights();
+      if (roadColorType === 'red') document.getElementById('btnRoadRed').classList.add('active');
+      if (roadColorType === 'yellow') document.getElementById('btnRoadYellow').classList.add('active');
+      if (roadColorType === 'white') document.getElementById('btnRoadWhite').classList.add('active');
+    }
+
+    function setTool(tool) {
+      currentTool = tool;
+      isPanMode = false;
+      document.getElementById('btnPan2D').classList.remove('active');
+      contourCanvas.style.cursor = 'crosshair';
+
+      clearToolHighlights();
+      if (tool === 'sculpt150k') document.getElementById('btnSculpt150k').classList.add('active');
+      if (tool === 'draw') document.getElementById('btnDraw').classList.add('active');
+      if (tool === 'river') document.getElementById('btnRiver').classList.add('active');
+      if (tool === 'label') document.getElementById('btnLabel').classList.add('active');
+      if (tool === 'profile') document.getElementById('btnProfile').classList.add('active');
+      draw2DCanvas();
+    }
+
+    function setContourDensity(interval) {
+      contourInterval = interval;
+      document.getElementById('densityLabel').textContent = interval + 'm';
+      document.querySelectorAll('.density-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.interval, 10) === interval);
+      });
+      document.getElementById('chkContours3D').checked = true;
+      rebuildTerrain();
+    }
+
+    function handleMapUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          baseMapImage = img;
+          document.getElementById('mapOpacityRow').style.display = 'flex';
+
+          if (baseMapTexture) baseMapTexture.dispose();
+          baseMapTexture = new THREE.Texture(img);
+          baseMapTexture.needsUpdate = true;
+
+          strokes = [];
+          rivers = [];
+          roads = [];
+          mapLabels = [];
+          actionHistory = [];
+          sculptGrid.fill(0);
+          reset2DZoom();
+
+          setTool('sculpt150k');
+          document.getElementById('chkDrapeMap').checked = true;
+          toggleDrapeMap();
+          draw2DCanvas();
+          rebuildTerrain();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateMapOpacity() {
+      baseMapOpacity = parseFloat(document.getElementById('mapOpacitySlider').value);
+      document.getElementById('mapOpVal').textContent = Math.round(baseMapOpacity * 100) + '%';
+      draw2DCanvas();
+    }
+
+    function toggleDrapeMap() {
+      const drape = document.getElementById('chkDrapeMap').checked;
+      if (drape && baseMapTexture) {
+        material.map = baseMapTexture;
+        material.vertexColors = false;
+        material.color.setHex(0xffffff);
+      } else {
+        if (drape && !baseMapTexture) {
+          alert('කරුණාකර පළමුව ඉහළ ඇති "🗺️ 0m 1:50,000 සිතියම" බොත්තම මඟින් සිතියම් පින්තූරයක් තෝරන්න.');
+          document.getElementById('chkDrapeMap').checked = false;
+        }
+        material.map = null;
+        material.vertexColors = true;
+      }
+      material.needsUpdate = true;
+    }
+
+    function applyMouseSculpt150k(nx, ny, dir) {
+      const radius = brushRadiusNorm;
+      const stepElev = brushPowerElev * dir;
+
+      for (let gy = 0; gy < GRID_SIZE; gy++) {
+        const py = gy / (GRID_SIZE - 1);
+        for (let gx = 0; gx < GRID_SIZE; gx++) {
+          const px = gx / (GRID_SIZE - 1);
+          const dist = Math.hypot(px - nx, py - ny);
+          if (dist < radius) {
+            const falloff = Math.pow(1 - dist / radius, 1.75);
+            const idx = gy * GRID_SIZE + gx;
+            sculptGrid[idx] = Math.max(-500, Math.min(MAX_ELEV, sculptGrid[idx] + stepElev * falloff));
+          }
+        }
+      }
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    contourCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    contourCanvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      change2DZoom(e.deltaY < 0 ? 0.25 : -0.25);
+    }, { passive: false });
+
+    contourCanvas.addEventListener('pointerdown', (e) => {
+      if (isPanMode || e.button === 1) {
+        isPanning = true;
+        lastPanScreen = { x: e.clientX, y: e.clientY };
+        contourCanvas.style.cursor = 'grabbing';
+        return;
+      }
+
+      const pt = getNormCoords(e);
+      if (currentTool === 'sculpt150k') {
+        isSculpting = true;
+        sculptDirection = (e.button === 2 || e.shiftKey) ? -1 : 1;
+        actionHistory.push('sculpt');
+        applyMouseSculpt150k(pt.x, pt.y, sculptDirection);
+      } else if (currentTool === 'draw') {
+        isDrawing = true;
+        currentStroke = { elevation: selectedElevation, points: [pt] };
+        strokes.push(currentStroke);
+        actionHistory.push('contour');
+        draw2DCanvas();
+      } else if (currentTool === 'river') {
+        isDrawing = true;
+        currentRiver = { points: [pt] };
+        rivers.push(currentRiver);
+        actionHistory.push('river');
+        draw2DCanvas();
+      } else if (currentTool === 'road') {
+        isDrawing = true;
+        currentRoad = { type: selectedRoadType, points: [pt] };
+        roads.push(currentRoad);
+        actionHistory.push('road');
+        draw2DCanvas();
+      } else if (currentTool === 'label') {
+        const name = prompt('මෙම ස්ථානයේ නම ඇතුළත් කරන්න (උදා: පිදුරුතලාගල, A1 මාර්ගය, කපොල්ල):');
+        if (name && name.trim() !== '') {
+          mapLabels.push({ x: pt.x, y: pt.y, text: name.trim() });
+          actionHistory.push('label');
+          draw2DCanvas();
+        }
+      } else if (currentTool === 'profile') {
+        isDraggingProfile = true;
+        profileLine.ax = pt.x;
+        profileLine.ay = pt.y;
+        profileLine.bx = pt.x;
+        profileLine.by = pt.y;
+        draw2DCanvas();
+        drawProfileGraph();
+      }
+    });
+
+    contourCanvas.addEventListener('pointermove', (e) => {
+      if (isPanning) {
+        const rect = contourCanvas.getBoundingClientRect();
+        const dx = (e.clientX - lastPanScreen.x) / (rect.width * zoom2D);
+        const dy = (e.clientY - lastPanScreen.y) / (rect.height * zoom2D);
+        pan2DX += dx;
+        pan2DY += dy;
+        clampPan();
+        lastPanScreen = { x: e.clientX, y: e.clientY };
+        draw2DCanvas();
+        return;
+      }
+
+      const pt = getNormCoords(e);
+      hover150kPoint = pt;
+
+      const gx = Math.min(GRID_SIZE - 1, Math.floor(pt.x * GRID_SIZE));
+      const gy = Math.min(GRID_SIZE - 1, Math.floor(pt.y * GRID_SIZE));
+      const h = Math.round(heightGrid[gy * GRID_SIZE + gx]);
+      document.getElementById('cursorElev').textContent = `උස: ${h}m`;
+
+      if (isSculpting && currentTool === 'sculpt150k') {
+        const dir = (e.buttons === 2 || e.shiftKey) ? -1 : sculptDirection;
+        applyMouseSculpt150k(pt.x, pt.y, dir);
+      } else if (isDrawing && currentTool === 'draw' && currentStroke) {
+        const last = currentStroke.points[currentStroke.points.length - 1];
+        if (Math.hypot(pt.x - last.x, pt.y - last.y) > 0.006) {
+          currentStroke.points.push(pt);
+          draw2DCanvas();
+        }
+      } else if (isDrawing && currentTool === 'river' && currentRiver) {
+        const last = currentRiver.points[currentRiver.points.length - 1];
+        if (Math.hypot(pt.x - last.x, pt.y - last.y) > 0.006) {
+          currentRiver.points.push(pt);
+          draw2DCanvas();
+        }
+      } else if (isDrawing && currentTool === 'road' && currentRoad) {
+        const last = currentRoad.points[currentRoad.points.length - 1];
+        if (Math.hypot(pt.x - last.x, pt.y - last.y) > 0.006) {
+          currentRoad.points.push(pt);
+          draw2DCanvas();
+        }
+      } else if (isDraggingProfile) {
+        profileLine.bx = pt.x;
+        profileLine.by = pt.y;
+        draw2DCanvas();
+        drawProfileGraph();
+      } else if (currentTool === 'sculpt150k') {
+        draw2DCanvas();
+      }
+    });
+
+    contourCanvas.addEventListener('pointerleave', () => {
+      hover150kPoint = null;
+      if (currentTool === 'sculpt150k') draw2DCanvas();
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (isPanning) {
+        isPanning = false;
+        contourCanvas.style.cursor = isPanMode ? 'grab' : 'crosshair';
+      }
+      if (isDrawing) {
+        isDrawing = false;
+        currentStroke = null;
+        currentRiver = null;
+        currentRoad = null;
+        rebuildTerrain();
+      }
+      if (isSculpting) {
+        isSculpting = false;
+      }
+      if (isDraggingProfile) {
+        isDraggingProfile = false;
+      }
+    });
+
+    function undoLastAction() {
+      const last = actionHistory.pop();
+      if (last === 'contour') strokes.pop();
+      else if (last === 'river') rivers.pop();
+      else if (last === 'road') roads.pop();
+      else if (last === 'label') mapLabels.pop();
+      else if (last === 'sculpt') sculptGrid.fill(0);
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    function clearEverythingAtOnce() {
+      if (autoRaiseTimer) {
+        clearInterval(autoRaiseTimer);
+        autoRaiseTimer = null;
+        const btn = document.getElementById('btnAutoRaise');
+        btn.classList.remove('running');
+        btn.textContent = '⚡ ස්වයංක්‍රීය උස් (20–2000m)';
+      }
+      strokes = [];
+      rivers = [];
+      roads = [];
+      mapLabels = [];
+      actionHistory = [];
+      sculptGrid.fill(0);
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    function getColorForElevation(elev) {
+      let closest = ELEVATIONS[0];
+      let minDiff = Math.abs(elev - closest.val);
+      for (const item of ELEVATIONS) {
+        const diff = Math.abs(elev - item.val);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = item;
+        }
+      }
+      return closest.color;
+    }
+
+    function draw2DCanvas() {
+      const w = contourCanvas.width;
+      const h = contourCanvas.height;
+      ctx2D.clearRect(0, 0, w, h);
+
+      const x0 = mapToCanvasX(0, w);
+      const y0 = mapToCanvasY(0, h);
+      const x1 = mapToCanvasX(1, w);
+      const y1 = mapToCanvasY(1, h);
+      const mapW = x1 - x0;
+      const mapH = y1 - y0;
+
+      ctx2D.fillStyle = 'rgba(2, 132, 199, 0.10)';
+      ctx2D.fillRect(0, 0, w, h);
+      ctx2D.fillStyle = '#fdfbf7';
+      ctx2D.fillRect(x0, y0, mapW, mapH);
+
+      if (baseMapImage) {
+        ctx2D.save();
+        ctx2D.globalAlpha = baseMapOpacity;
+        ctx2D.drawImage(baseMapImage, x0, y0, mapW, mapH);
+        ctx2D.restore();
+      }
+
+      // Show sculpted mountain / valley changes directly over the 1:50,000 map
+      const show150kRelief = document.getElementById('chkShow150kRelief').checked;
+      if (show150kRelief) {
+        const cellW = mapW / GRID_SIZE;
+        const cellH = mapH / GRID_SIZE;
+        for (let gy = 0; gy < GRID_SIZE; gy += 2) {
+          for (let gx = 0; gx < GRID_SIZE; gx += 2) {
+            const sv = sculptGrid[gy * GRID_SIZE + gx];
+            if (Math.abs(sv) > 12) {
+              const alpha = Math.min(0.45, Math.abs(sv) / 350);
+              ctx2D.fillStyle = sv > 0
+                ? `rgba(185, 28, 28, ${alpha.toFixed(2)})`
+                : `rgba(2, 132, 199, ${alpha.toFixed(2)})`;
+              ctx2D.fillRect(x0 + gx * cellW, y0 + gy * cellH, cellW * 2.2, cellH * 2.2);
+            }
+          }
+        }
+      }
+
+      ctx2D.strokeStyle = '#0284c7';
+      ctx2D.lineWidth = 2;
+      ctx2D.strokeRect(x0, y0, mapW, mapH);
+
+      const lx = Math.max(6, x0 + 6);
+      const ly = Math.max(6, y0 + 6);
+      ctx2D.fillStyle = 'rgba(253, 251, 247, 0.92)';
+      ctx2D.fillRect(lx, ly, 52, 15);
+      ctx2D.fillStyle = '#0284c7';
+      ctx2D.font = 'bold 10px sans-serif';
+      ctx2D.textAlign = 'left';
+      ctx2D.textBaseline = 'middle';
+      ctx2D.fillText('0m මායිම', lx + 4, ly + 7.5);
+
+      ctx2D.strokeStyle = baseMapImage ? 'rgba(100,116,139,0.25)' : '#e7e5e4';
+      ctx2D.lineWidth = 1;
+      for (let i = 1; i < 10; i++) {
+        const t = i / 10;
+        const gx = mapToCanvasX(t, w);
+        const gy = mapToCanvasY(t, h);
+
+        ctx2D.beginPath();
+        ctx2D.moveTo(gx, y0);
+        ctx2D.lineTo(gx, y1);
+        ctx2D.stroke();
+
+        ctx2D.beginPath();
+        ctx2D.moveTo(x0, gy);
+        ctx2D.lineTo(x1, gy);
+        ctx2D.stroke();
+      }
+
+      strokes.forEach(stroke => {
+        if (stroke.points.length === 0) return;
+        const lineColor = getColorForElevation(stroke.elevation);
+        ctx2D.strokeStyle = lineColor;
+        ctx2D.lineWidth = 2.6;
+        ctx2D.lineCap = 'round';
+        ctx2D.lineJoin = 'round';
+
+        ctx2D.beginPath();
+        stroke.points.forEach((p, idx) => {
+          const cx = mapToCanvasX(p.x, w);
+          const cy = mapToCanvasY(p.y, h);
+          if (idx === 0) ctx2D.moveTo(cx, cy);
+          else ctx2D.lineTo(cx, cy);
+        });
+        ctx2D.stroke();
+
+        const mid = stroke.points[Math.floor(stroke.points.length / 2)];
+        const mx = mapToCanvasX(mid.x, w);
+        const my = mapToCanvasY(mid.y, h);
+        ctx2D.fillStyle = 'rgba(253, 251, 247, 0.90)';
+        ctx2D.fillRect(mx - 18, my - 7, 36, 14);
+        ctx2D.fillStyle = lineColor;
+        ctx2D.font = 'bold 10px sans-serif';
+        ctx2D.textAlign = 'center';
+        ctx2D.textBaseline = 'middle';
+        ctx2D.fillText(stroke.elevation, mx, my);
+      });
+
+      rivers.forEach(river => {
+        if (river.points.length < 2) return;
+        ctx2D.save();
+        ctx2D.strokeStyle = '#0284c7';
+        ctx2D.lineCap = 'round';
+        ctx2D.lineJoin = 'round';
+        for (let i = 1; i < river.points.length; i++) {
+          const t = i / river.points.length;
+          ctx2D.lineWidth = (2 + t * 4.5) * Math.sqrt(zoom2D);
+          ctx2D.beginPath();
+          ctx2D.moveTo(mapToCanvasX(river.points[i - 1].x, w), mapToCanvasY(river.points[i - 1].y, h));
+          ctx2D.lineTo(mapToCanvasX(river.points[i].x, w), mapToCanvasY(river.points[i].y, h));
+          ctx2D.stroke();
+        }
+        ctx2D.restore();
+      });
+
+      roads.forEach(road => {
+        if (road.points.length < 2) return;
+        ctx2D.save();
+        ctx2D.lineCap = 'round';
+        ctx2D.lineJoin = 'round';
+
+        ctx2D.strokeStyle = '#1e293b';
+        ctx2D.lineWidth = (road.type === 'red' ? 5.2 : road.type === 'yellow' ? 4.5 : 3.8) * Math.sqrt(zoom2D);
+        ctx2D.beginPath();
+        road.points.forEach((p, idx) => {
+          const cx = mapToCanvasX(p.x, w);
+          const cy = mapToCanvasY(p.y, h);
+          if (idx === 0) ctx2D.moveTo(cx, cy);
+          else ctx2D.lineTo(cx, cy);
+        });
+        ctx2D.stroke();
+
+        ctx2D.strokeStyle = road.type === 'red' ? '#ef4444' : road.type === 'yellow' ? '#facc15' : '#ffffff';
+        ctx2D.lineWidth = (road.type === 'red' ? 3.2 : road.type === 'yellow' ? 2.6 : 2.0) * Math.sqrt(zoom2D);
+        ctx2D.stroke();
+        ctx2D.restore();
+      });
+
+      mapLabels.forEach(lbl => {
+        const px = mapToCanvasX(lbl.x, w);
+        const py = mapToCanvasY(lbl.y, h);
+        ctx2D.fillStyle = '#dc2626';
+        ctx2D.beginPath();
+        ctx2D.arc(px, py, 4.5, 0, Math.PI * 2);
+        ctx2D.fill();
+
+        ctx2D.font = 'bold 11px sans-serif';
+        const tw = ctx2D.measureText(lbl.text).width + 10;
+        ctx2D.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx2D.fillRect(px - tw / 2, py - 22, tw, 16);
+        ctx2D.fillStyle = '#38bdf8';
+        ctx2D.textAlign = 'center';
+        ctx2D.textBaseline = 'middle';
+        ctx2D.fillText(lbl.text, px, py - 14);
+      });
+
+      // Draw brush circle when sculpting on 1:50,000 map
+      if (currentTool === 'sculpt150k' && hover150kPoint) {
+        const bx = mapToCanvasX(hover150kPoint.x, w);
+        const by = mapToCanvasY(hover150kPoint.y, h);
+        const br = brushRadiusNorm * mapW;
+        ctx2D.save();
+        ctx2D.strokeStyle = '#ef4444';
+        ctx2D.lineWidth = 2;
+        ctx2D.setLineDash([4, 3]);
+        ctx2D.beginPath();
+        ctx2D.arc(bx, by, br, 0, Math.PI * 2);
+        ctx2D.stroke();
+        ctx2D.restore();
+      }
+
+      ctx2D.save();
+      ctx2D.strokeStyle = '#0f172a';
+      ctx2D.setLineDash([5, 4]);
+      ctx2D.lineWidth = 2;
+      ctx2D.beginPath();
+      ctx2D.moveTo(mapToCanvasX(profileLine.ax, w), mapToCanvasY(profileLine.ay, h));
+      ctx2D.lineTo(mapToCanvasX(profileLine.bx, w), mapToCanvasY(profileLine.by, h));
+      ctx2D.stroke();
+      ctx2D.restore();
+
+      drawMarker(mapToCanvasX(profileLine.ax, w), mapToCanvasY(profileLine.ay, h), 'A');
+      drawMarker(mapToCanvasX(profileLine.bx, w), mapToCanvasY(profileLine.by, h), 'B');
+    }
+
+    function drawMarker(x, y, label) {
+      ctx2D.fillStyle = '#ef4444';
+      ctx2D.beginPath();
+      ctx2D.arc(x, y, 8, 0, Math.PI * 2);
+      ctx2D.fill();
+      ctx2D.fillStyle = '#fff';
+      ctx2D.font = 'bold 10px sans-serif';
+      ctx2D.textAlign = 'center';
+      ctx2D.textBaseline = 'middle';
+      ctx2D.fillText(label, x, y);
+    }
+
+    function distToSegment(px, py, vx, vy, wx, wy) {
+      const l2 = (vx - wx) * (vx - wx) + (vy - wy) * (vy - wy);
+      if (l2 === 0) return Math.hypot(px - vx, py - vy);
+      let t = ((px - vx) * (wx - vx) + (py - vy) * (wy - vy)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (vx + t * (wx - vx)), py - (vy + t * (wy - vy)));
+    }
+
+    function computeHeightGrid() {
+      const samplePoints = [];
+      strokes.forEach(s => {
+        s.points.forEach(p => {
+          samplePoints.push({ x: p.x, y: p.y, z: s.elevation });
+        });
+      });
+
+      if (samplePoints.length === 0) {
+        heightGrid.fill(0);
+      } else {
+        const edgeAnchors = [];
+        const edgeSteps = 16;
+        for (let i = 0; i <= edgeSteps; i++) {
+          const t = i / edgeSteps;
+          edgeAnchors.push({ x: t, y: 0, z: 0 });
+          edgeAnchors.push({ x: t, y: 1, z: 0 });
+          edgeAnchors.push({ x: 0, y: t, z: 0 });
+          edgeAnchors.push({ x: 1, y: t, z: 0 });
+        }
+        const allPoints = samplePoints.concat(edgeAnchors);
+
+        for (let gy = 0; gy < GRID_SIZE; gy++) {
+          const ny = gy / (GRID_SIZE - 1);
+          for (let gx = 0; gx < GRID_SIZE; gx++) {
+            const nx = gx / (GRID_SIZE - 1);
+            if (gx === 0 || gx === GRID_SIZE - 1 || gy === 0 || gy === GRID_SIZE - 1) {
+              heightGrid[gy * GRID_SIZE + gx] = 0;
+              continue;
+            }
+
+            let num = 0;
+            let den = 0;
+            let exactHit = false;
+
+            for (let i = 0; i < allPoints.length; i++) {
+              const sp = allPoints[i];
+              const dx = nx - sp.x;
+              const dy = ny - sp.y;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < 0.00004) {
+                heightGrid[gy * GRID_SIZE + gx] = sp.z;
+                exactHit = true;
+                break;
+              }
+              const w = 1.0 / Math.pow(d2, 1.35);
+              num += sp.z * w;
+              den += w;
+            }
+
+            if (!exactHit) {
+              heightGrid[gy * GRID_SIZE + gx] = num / den;
+            }
+          }
+        }
+
+        const passes = parseInt(document.getElementById('smoothSlider').value, 10);
+        const labels = ['ඉතා තියුණු', 'තියුණු', 'මධ්‍යම', 'සුමට', 'ඉතා සුමට'];
+        document.getElementById('smoothVal').textContent = labels[passes - 1];
+
+        for (let p = 0; p < passes * 3; p++) {
+          const temp = new Float32Array(heightGrid);
+          for (let y = 1; y < GRID_SIZE - 1; y++) {
+            for (let x = 1; x < GRID_SIZE - 1; x++) {
+              const idx = y * GRID_SIZE + x;
+              heightGrid[idx] = (
+                temp[idx] * 4 +
+                temp[idx - 1] * 2 +
+                temp[idx + 1] * 2 +
+                temp[idx - GRID_SIZE] * 2 +
+                temp[idx + GRID_SIZE] * 2 +
+                temp[idx - GRID_SIZE - 1] +
+                temp[idx - GRID_SIZE + 1] +
+                temp[idx + GRID_SIZE - 1] +
+                temp[idx + GRID_SIZE + 1]
+              ) / 16.0;
+            }
+          }
+        }
+      }
+
+      riverMask.fill(0);
+      roadMask.fill(0);
+
+      const useDetail = document.getElementById('chkDetail').checked;
+      for (let y = 0; y < GRID_SIZE; y++) {
+        const ny = y / (GRID_SIZE - 1);
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const nx = x / (GRID_SIZE - 1);
+          const idx = y * GRID_SIZE + x;
+
+          const edgeDist = Math.min(nx, 1 - nx, ny, 1 - ny);
+          const edgeMask = Math.min(1, Math.pow(edgeDist / 0.06, 1.25));
+
+          let h = Math.max(0, (heightGrid[idx] + sculptGrid[idx]) * edgeMask);
+
+          if (useDetail && h > 5) {
+            const detailMult = isUltraNatural ? 1.45 : 1.0;
+            const amp = Math.min(34, (h / MAX_ELEV) * 32 * detailMult) * edgeMask;
+            const n = fbm(x * (isUltraNatural ? 0.18 : 0.14), y * (isUltraNatural ? 0.18 : 0.14));
+            h = Math.max(0, h + n * amp);
+          }
+
+          if (rivers.length > 0) {
+            let minRiverDist = 999;
+            let riverProgress = 0;
+
+            for (let r = 0; r < rivers.length; r++) {
+              const pts = rivers[r].points;
+              for (let s = 1; s < pts.length; s++) {
+                const d = distToSegment(nx, ny, pts[s - 1].x, pts[s - 1].y, pts[s].x, pts[s].y);
+                if (d < minRiverDist) {
+                  minRiverDist = d;
+                  riverProgress = s / pts.length;
+                }
+              }
+            }
+
+            const channelRadius = 0.014 + riverProgress * 0.012;
+            const valleyRadius = channelRadius * 3.8;
+
+            if (minRiverDist < valleyRadius) {
+              const valleyFactor = Math.cos((minRiverDist / valleyRadius) * (Math.PI / 2));
+              h = Math.max(2, h - valleyFactor * 48);
+
+              if (minRiverDist < channelRadius) {
+                riverMask[idx] = 1.0 - (minRiverDist / channelRadius) * 0.35;
+              }
+            }
+          }
+
+          if (roads.length > 0) {
+            for (let r = 0; r < roads.length; r++) {
+              const pts = roads[r].points;
+              const roadRad = roads[r].type === 'red' ? 0.013 : roads[r].type === 'yellow' ? 0.011 : 0.009;
+              for (let s = 1; s < pts.length; s++) {
+                const d = distToSegment(nx, ny, pts[s - 1].x, pts[s - 1].y, pts[s].x, pts[s].y);
+                if (d < roadRad) {
+                  roadMask[idx] = roads[r].type === 'red' ? 1 : roads[r].type === 'yellow' ? 2 : 3;
+                }
+              }
+            }
+          }
+
+          heightGrid[idx] = h;
+        }
+      }
+    }
+
+    function drawProfileGraph() {
+      const w = profileCanvas.width;
+      const h = profileCanvas.height;
+      ctxProf.clearRect(0, 0, w, h);
+
+      const steps = 90;
+      const samples = [];
+      let maxSampleElev = 100;
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const sx = profileLine.ax + (profileLine.bx - profileLine.ax) * t;
+        const sy = profileLine.ay + (profileLine.by - profileLine.ay) * t;
+        const gx = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(sx * (GRID_SIZE - 1))));
+        const gy = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(sy * (GRID_SIZE - 1))));
+        const elev = heightGrid[gy * GRID_SIZE + gx];
+        samples.push(elev);
+        if (elev > maxSampleElev) maxSampleElev = elev;
+      }
+
+      const scaleMax = Math.max(100, Math.ceil(maxSampleElev / 100) * 100);
+      document.getElementById('profileScaleText').textContent = `හරස්කඩ පැතිකඩ (උපරිම: ${scaleMax}m)`;
+
+      ctxProf.strokeStyle = '#1e293b';
+      ctxProf.lineWidth = 1;
+      for (let i = 1; i < 4; i++) {
+        ctxProf.beginPath();
+        ctxProf.moveTo(0, (h / 4) * i);
+        ctxProf.lineTo(w, (h / 4) * i);
+        ctxProf.stroke();
+      }
+
+      ctxProf.beginPath();
+      ctxProf.moveTo(0, h);
+
+      for (let i = 0; i <= steps; i++) {
+        const px = (i / steps) * w;
+        const py = h - Math.min(h - 4, (samples[i] / scaleMax) * (h - 7));
+        ctxProf.lineTo(px, py);
+      }
+
+      ctxProf.lineTo(w, h);
+      ctxProf.closePath();
+
+      const grad = ctxProf.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(16, 185, 129, 0.72)');
+      grad.addColorStop(1, 'rgba(16, 185, 129, 0.12)');
+      ctxProf.fillStyle = grad;
+      ctxProf.fill();
+
+      ctxProf.strokeStyle = '#34d399';
+      ctxProf.lineWidth = 2;
+      ctxProf.stroke();
+    }
+
+    const container = document.getElementById('threeContainer');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x93c5fd);
+    scene.fog = new THREE.FogExp2(0xbae6fd, 0.006);
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 500);
+    camera.position.set(0, 44, 62);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxPolarAngle = Math.PI / 2 - 0.04;
+
+    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x365314, 0.65);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.25);
+    sunLight.position.set(45, 65, 40);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 10;
+    sunLight.shadow.camera.far = 180;
+    const d = 42;
+    sunLight.shadow.camera.left = -d;
+    sunLight.shadow.camera.right = d;
+    sunLight.shadow.camera.top = d;
+    sunLight.shadow.camera.bottom = -d;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+
+    const TERRAIN_WIDTH = 60;
+    const geometry = new THREE.PlaneGeometry(TERRAIN_WIDTH, TERRAIN_WIDTH, GRID_SIZE - 1, GRID_SIZE - 1);
+    geometry.rotateX(-Math.PI / 2);
+
+    const material = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 0.90,
+      metalness: 0.04
+    });
+
+    const terrainMesh = new THREE.Mesh(geometry, material);
+    terrainMesh.receiveShadow = true;
+    terrainMesh.castShadow = true;
+    scene.add(terrainMesh);
+
+    const WATER_SEGMENTS = 48;
+    const waterGeo = new THREE.PlaneGeometry(TERRAIN_WIDTH - 0.05, TERRAIN_WIDTH - 0.05, WATER_SEGMENTS, WATER_SEGMENTS);
+    waterGeo.rotateX(-Math.PI / 2);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      transparent: true,
+      opacity: 0.80,
+      roughness: 0.12,
+      metalness: 0.65
+    });
+    const waterMesh = new THREE.Mesh(waterGeo, waterMat);
+    waterMesh.receiveShadow = true;
+    scene.add(waterMesh);
+
+    const baseGroup = new THREE.Group();
+    const layer1 = new THREE.Mesh(
+      new THREE.BoxGeometry(TERRAIN_WIDTH, 1.0, TERRAIN_WIDTH),
+      new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.95 })
+    );
+    layer1.position.y = -0.51;
+
+    const layer2 = new THREE.Mesh(
+      new THREE.BoxGeometry(TERRAIN_WIDTH, 1.5, TERRAIN_WIDTH),
+      new THREE.MeshStandardMaterial({ color: 0x44403c, roughness: 0.95 })
+    );
+    layer2.position.y = -1.76;
+
+    const layer3 = new THREE.Mesh(
+      new THREE.BoxGeometry(TERRAIN_WIDTH, 2.0, TERRAIN_WIDTH),
+      new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 0.98 })
+    );
+    layer3.position.y = -3.51;
+
+    baseGroup.add(layer1, layer2, layer3);
+    scene.add(baseGroup);
+
+    const MAX_TREES = 1200;
+    const trunkGeo = new THREE.CylinderGeometry(0.08, 0.14, 0.7, 5);
+    trunkGeo.translate(0, 0.35, 0);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
+    const trunkInstanced = new THREE.InstancedMesh(trunkGeo, trunkMat, MAX_TREES);
+    trunkInstanced.castShadow = true;
+    trunkInstanced.receiveShadow = true;
+
+    const canopyGeo = new THREE.DodecahedronGeometry(0.55, 1);
+    canopyGeo.translate(0, 0.95, 0);
+    const canopyMat = new THREE.MeshStandardMaterial({ color: 0x2d6a27, roughness: 0.85 });
+    const canopyInstanced = new THREE.InstancedMesh(canopyGeo, canopyMat, MAX_TREES);
+    canopyInstanced.castShadow = true;
+    canopyInstanced.receiveShadow = true;
+
+    scene.add(trunkInstanced);
+    scene.add(canopyInstanced);
+
+    const cloudsGroup = new THREE.Group();
+    const cloudMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.72,
+      roughness: 1.0
+    });
+    const puffGeo = new THREE.DodecahedronGeometry(2.2, 1);
+
+    for (let c = 0; c < 7; c++) {
+      const cloud = new THREE.Group();
+      const puffs = 3 + (c % 3);
+      for (let p = 0; p < puffs; p++) {
+        const mesh = new THREE.Mesh(puffGeo, cloudMat);
+        mesh.position.set(p * 1.9 - 2, (p % 2) * 0.5, (hash2D(c, p) - 0.5) * 1.8);
+        const s = 0.75 + hash2D(p, c) * 0.6;
+        mesh.scale.set(s * 1.3, s * 0.65, s);
+        cloud.add(mesh);
+      }
+      cloud.position.set((c - 3) * 14, 24 + (c % 3) * 3.5, (hash2D(c, 9) - 0.5) * 48);
+      cloudsGroup.add(cloud);
+    }
+    scene.add(cloudsGroup);
+
+    function getSlopeAt(gx, gy, exag) {
+      const xL = Math.max(0, gx - 1);
+      const xR = Math.min(GRID_SIZE - 1, gx + 1);
+      const yU = Math.max(0, gy - 1);
+      const yD = Math.min(GRID_SIZE - 1, gy + 1);
+
+      const hL = heightGrid[gy * GRID_SIZE + xL];
+      const hR = heightGrid[gy * GRID_SIZE + xR];
+      const hU = heightGrid[yU * GRID_SIZE + gx];
+      const hD = heightGrid[yD * GRID_SIZE + gx];
+
+      const dx = (hR - hL) * exag;
+      const dy = (hD - hU) * exag;
+      return Math.hypot(dx, dy);
+    }
+
+    function getNaturalVertexColor(elev, slope, noiseVal, riverVal, roadVal, showContours, showRoads) {
+      if (showRoads && roadVal > 0 && elev >= 14) {
+        if (roadVal === 1) return new THREE.Color(0xef4444);
+        if (roadVal === 2) return new THREE.Color(0xfacc15);
+        if (roadVal === 3) return new THREE.Color(0xffffff);
+      }
+
+      if (riverVal > 0.25) {
+        const c = new THREE.Color();
+        const rapidFoam = slope > 35 ? 0.35 : 0.0;
+        c.setRGB(
+          0.04 + rapidFoam + noiseVal * 0.05,
+          0.48 + rapidFoam + noiseVal * 0.08,
+          0.78 + rapidFoam * 0.5
+        );
+        return c;
+      }
+
+      if (showContours && elev >= 1) {
+        const mod = elev % contourInterval;
+        const band = Math.min(contourInterval * 0.14, 2.5 + slope * 0.04);
+        if (mod < band || mod > contourInterval - band) {
+          const isMajorIndex = (elev % 100) < 6 || (elev % 100) > 94;
+          return isMajorIndex ? new THREE.Color(0x2d1204) : new THREE.Color(0x5c2d16);
+        }
+      }
+
+      const c = new THREE.Color();
+      const cliffThreshold = isUltraNatural ? 42 : 55;
+      const isSteepCliff = slope > cliffThreshold && elev > 50;
+
+      if (elev < 16) {
+        c.setRGB(0.65 + noiseVal * 0.06, 0.62 + noiseVal * 0.06, 0.46);
+      } else if (elev < 35) {
+        c.setRGB(0.82 + noiseVal * 0.06, 0.75 + noiseVal * 0.06, 0.52);
+      } else if (isSteepCliff) {
+        const rockShade = 0.34 + noiseVal * 0.16;
+        c.setRGB(rockShade + 0.05, rockShade + 0.01, rockShade - 0.02);
+      } else if (elev < 450) {
+        const t = (elev - 35) / 415;
+        c.setRGB(
+          0.20 - t * 0.05 + noiseVal * 0.08,
+          0.52 - t * 0.08 + noiseVal * 0.09,
+          0.15 + noiseVal * 0.05
+        );
+      } else if (elev < 1100) {
+        const t = (elev - 450) / 650;
+        c.setRGB(
+          0.16 + t * 0.18 + noiseVal * 0.08,
+          0.42 - t * 0.12 + noiseVal * 0.07,
+          0.14 + t * 0.06
+        );
+      } else if (elev < 1600) {
+        const t = (elev - 1100) / 500;
+        c.setRGB(
+          0.35 + t * 0.20 + noiseVal * 0.08,
+          0.31 + t * 0.20 + noiseVal * 0.08,
+          0.22 + t * 0.25 + noiseVal * 0.08
+        );
+      } else {
+        const t = Math.min(1, (elev - 1600) / 400);
+        c.setRGB(
+          0.56 + t * 0.36 + noiseVal * 0.05,
+          0.55 + t * 0.37 + noiseVal * 0.05,
+          0.58 + t * 0.36 + noiseVal * 0.05
+        );
+      }
+      return c;
+    }
+
+    function rebuildTerrain() {
+      computeHeightGrid();
+      const pos = geometry.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      const exag = parseFloat(document.getElementById('exagSlider').value);
+      const showContours = document.getElementById('chkContours3D').checked;
+      const showRoads = document.getElementById('chkRoads3D').checked;
+      const showTrees = document.getElementById('chkTrees').checked;
+
+      const dummy = new THREE.Object3D();
+      const treeColor = new THREE.Color();
+      let treeCount = 0;
+      const treeThreshold = isUltraNatural ? 0.66 : 0.78;
+
+      for (let i = 0; i < pos.count; i++) {
+        const gx = i % GRID_SIZE;
+        const gy = Math.floor(i / GRID_SIZE);
+        const elev = heightGrid[i];
+        const rVal = riverMask[i];
+        const rdVal = roadMask[i];
+
+        const y = (elev / MAX_ELEV) * 26 * exag;
+        pos.setY(i, y);
+
+        const slope = getSlopeAt(gx, gy, exag);
+        const nVal = fbm(gx * 0.25, gy * 0.25);
+        const col = getNaturalVertexColor(elev, slope, nVal, rVal, rdVal, showContours, showRoads);
+
+        colors[i * 3] = col.r;
+        colors[i * 3 + 1] = col.g;
+        colors[i * 3 + 2] = col.b;
+
+        if (
+          showTrees &&
+          rVal < 0.05 &&
+          rdVal === 0 &&
+          treeCount < MAX_TREES &&
+          gx > 2 && gx < GRID_SIZE - 3 &&
+          gy > 2 && gy < GRID_SIZE - 3 &&
+          elev > 40 && elev < 1150 &&
+          slope < 45
+        ) {
+          const rnd = hash2D(gx * 1.7, gy * 2.3);
+          if (rnd > treeThreshold) {
+            const wx = pos.getX(i) + (hash2D(gy, gx) - 0.5) * 0.45;
+            const wz = pos.getZ(i) + (hash2D(gx, gy) - 0.5) * 0.45;
+            const scale = (0.55 + hash2D(gx + 5, gy + 9) * 0.68) * (1 - (elev - 40) / 1650);
+
+            dummy.position.set(wx, y - 0.05, wz);
+            dummy.rotation.y = rnd * Math.PI * 2;
+            dummy.scale.set(scale, scale * (0.9 + rnd * 0.35), scale);
+            dummy.updateMatrix();
+
+            trunkInstanced.setMatrixAt(treeCount, dummy.matrix);
+            canopyInstanced.setMatrixAt(treeCount, dummy.matrix);
+
+            treeColor.setHSL(0.26 + (rnd - treeThreshold) * 0.24, 0.58, 0.23 + (hash2D(gx, 3) * 0.14));
+            canopyInstanced.setColorAt(treeCount, treeColor);
+
+            treeCount++;
+          }
+        }
+      }
+
+      trunkInstanced.count = treeCount;
+      canopyInstanced.count = treeCount;
+      trunkInstanced.instanceMatrix.needsUpdate = true;
+      canopyInstanced.instanceMatrix.needsUpdate = true;
+      if (canopyInstanced.instanceColor) canopyInstanced.instanceColor.needsUpdate = true;
+
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      pos.needsUpdate = true;
+      geometry.computeVertexNormals();
+
+      waterMesh.position.y = (16 / MAX_ELEV) * 26 * exag;
+      drawProfileGraph();
+    }
+
+    function update3DLabels() {
+      labels3DLayer.innerHTML = '';
+      if (mapLabels.length === 0) return;
+
+      const exag = parseFloat(document.getElementById('exagSlider').value);
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      const vec = new THREE.Vector3();
+
+      mapLabels.forEach(lbl => {
+        const gx = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(lbl.x * (GRID_SIZE - 1))));
+        const gy = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(lbl.y * (GRID_SIZE - 1))));
+        const elev = heightGrid[gy * GRID_SIZE + gx];
+
+        const wx = (lbl.x - 0.5) * TERRAIN_WIDTH;
+        const wz = (lbl.y - 0.5) * TERRAIN_WIDTH;
+        const wy = (elev / MAX_ELEV) * 26 * exag + 1.2;
+
+        vec.set(wx, wy, wz);
+        vec.project(camera);
+
+        if (vec.z > 1) return;
+
+        const sx = (vec.x * 0.5 + 0.5) * width;
+        const sy = (-(vec.y * 0.5) + 0.5) * height;
+
+        const div = document.createElement('div');
+        div.className = 'pin-3d';
+        div.style.left = sx + 'px';
+        div.style.top = sy + 'px';
+        div.textContent = '📍 ' + lbl.text;
+        labels3DLayer.appendChild(div);
+      });
+    }
+
+    function toggleVideoRecording() {
+      const btn = document.getElementById('btnRecordVideo');
+
+      if (!isRecordingVideo) {
+        const canvasEl = renderer.domElement;
+        if (!canvasEl.captureStream) {
+          alert('මෙම Browser එක වීඩියෝ පටිගත කිරීමට සහාය නොදක්වයි. කරුණාකර Chrome හෝ Edge භාවිත කරන්න.');
+          return;
+        }
+
+        const stream = canvasEl.captureStream(30);
+        const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? { mimeType: 'video/webm;codecs=vp9' }
+          : { mimeType: 'video/webm' };
+
+        recordedChunks = [];
+        try {
+          mediaRecorder = new MediaRecorder(stream, options);
+        } catch (err) {
+          mediaRecorder = new MediaRecorder(stream);
+        }
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Manpetha_3D_Terrain_${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        };
+
+        mediaRecorder.start();
+        isRecordingVideo = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.8;
+        btn.classList.add('recording');
+        btn.textContent = '⏹️ නවතා SAVE';
+      } else {
+        isRecordingVideo = false;
+        controls.autoRotate = false;
+        btn.classList.remove('recording');
+        btn.textContent = '🎥 වීඩියෝව SAVE';
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+      }
+    }
+
+    function updateExaggeration() {
+      const val = document.getElementById('exagSlider').value;
+      document.getElementById('exagVal').textContent = val + 'x';
+      rebuildTerrain();
+    }
+
+    function updateSun() {
+      const angle = (parseFloat(document.getElementById('sunSlider').value) * Math.PI) / 180;
+      sunLight.position.x = Math.cos(angle) * 65;
+      sunLight.position.z = Math.sin(angle) * 65;
+    }
+
+    function toggleWater() {
+      waterMesh.visible = document.getElementById('chkWater').checked;
+    }
+
+    function toggleClouds() {
+      cloudsGroup.visible = document.getElementById('chkClouds').checked;
+    }
+
+    function makeCirclePoints(cx, cy, rx, ry, steps = 44) {
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        pts.push({
+          x: Math.max(0.08, Math.min(0.92, cx + Math.cos(a) * rx)),
+          y: Math.max(0.08, Math.min(0.92, cy + Math.sin(a) * ry))
+        });
+      }
+      return pts;
+    }
+
+    function loadPreset(type) {
+      strokes = [];
+      rivers = [];
+      roads = [];
+      mapLabels = [];
+      actionHistory = [];
+      sculptGrid.fill(0);
+
+      if (type === 'hill') {
+        strokes.push({ elevation: 200, points: makeCirclePoints(0.5, 0.5, 0.36, 0.33) });
+        strokes.push({ elevation: 600, points: makeCirclePoints(0.5, 0.5, 0.26, 0.24) });
+        strokes.push({ elevation: 1200, points: makeCirclePoints(0.5, 0.5, 0.17, 0.15) });
+        strokes.push({ elevation: 1800, points: makeCirclePoints(0.5, 0.5, 0.08, 0.07) });
+        mapLabels.push({ x: 0.5, y: 0.5, text: 'උස් කඳු මුදුන (1800m)' });
+      } else if (type === 'ridge') {
+        strokes.push({ elevation: 100, points: makeCirclePoints(0.5, 0.5, 0.39, 0.30) });
+        strokes.push({ elevation: 500, points: makeCirclePoints(0.5, 0.5, 0.32, 0.21) });
+        strokes.push({ elevation: 1200, points: makeCirclePoints(0.32, 0.5, 0.11, 0.11) });
+        strokes.push({ elevation: 1500, points: makeCirclePoints(0.68, 0.5, 0.11, 0.11) });
+        rivers.push({
+          points: [
+            { x: 0.50, y: 0.48 },
+            { x: 0.51, y: 0.60 },
+            { x: 0.48, y: 0.72 },
+            { x: 0.52, y: 0.85 },
+            { x: 0.50, y: 0.96 }
+          ]
+        });
+        roads.push({
+          type: 'red',
+          points: [
+            { x: 0.12, y: 0.65 },
+            { x: 0.34, y: 0.56 },
+            { x: 0.50, y: 0.49 },
+            { x: 0.68, y: 0.58 },
+            { x: 0.88, y: 0.66 }
+          ]
+        });
+        mapLabels.push({ x: 0.50, y: 0.45, text: 'කපොල්ල හා මාර්ගය' });
+        mapLabels.push({ x: 0.50, y: 0.76, text: 'ගංගා නිම්නය' });
+      }
+
+      draw2DCanvas();
+      rebuildTerrain();
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      if (waterMesh.visible) {
+        const wPos = waterGeo.attributes.position;
+        for (let i = 0; i < wPos.count; i++) {
+          const vx = wPos.getX(i);
+          const vz = wPos.getZ(i);
+          const wave = Math.sin(vx * 0.45 + t * 1.8) * 0.04 + Math.cos(vz * 0.45 + t * 1.4) * 0.04;
+          wPos.setY(i, wave);
+        }
+        wPos.needsUpdate = true;
+      }
+
+      if (cloudsGroup.visible) {
+        cloudsGroup.children.forEach((cloud, idx) => {
+          cloud.position.x += 0.015 + (idx % 3) * 0.005;
+          if (cloud.position.x > 48) cloud.position.x = -48;
+        });
+      }
+
+      controls.update();
+      update3DLabels();
+      renderer.render(scene, camera);
+    }
+
+    document.getElementById('btnSculpt150k').classList.add('active');
+    loadPreset('ridge');
+    animate();
+  </script>
+</body>
+</html>
